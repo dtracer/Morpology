@@ -39,6 +39,21 @@ public class DbManager {
 	////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////
 
+	@SuppressWarnings("unused")
+	private static final String TABLE_CATEGORY_LIST = "category_list";
+	
+	@SuppressWarnings("unused")
+	private static final String TABLE_WORD_LIST = "word_list";
+	
+	@SuppressWarnings("unused")
+	private static final String TABLE_EXCEPTIONAL_WORD_LIST = "exceptional_word_list";
+	
+	@SuppressWarnings("unused")
+	private static final String TABLE_REPORTED_LIST = "reported_list";
+	
+	@SuppressWarnings("unused")
+	private static final String TABLE_TRAINING_DATA = "training_data";
+
 	private static final String url = "jdbc:mysql://localhost/" + databaseName;
 
 	private static volatile DbManager instance; 
@@ -81,6 +96,37 @@ public class DbManager {
 	}
 
 	/**
+	 * 테이블의 tuple 개수를 리턴한다.
+	 * 
+	 * @param tableName 테이블 이름이 들어감<br>
+	 * {@link #TABLE_CATEGORY_LIST}<br>
+	 * {@link #TABLE_WORD_LIST}<br>
+	 * {@link #TABLE_EXCEPTIONAL_WORD_LIST}<br>
+	 * {@link #TABLE_REPORTED_LIST}<br>
+	 * {@link #TABLE_TRAINING_DATA}<br>
+	 * 중에 하나가 들어감
+	 * 
+	 * @return integer value of 테이블 tuple의 개수
+	 */
+	public int queryCountOfTable(String tableName) {
+		Connection connection = getConnection();
+		int result = -1;
+		String query = "select count(*) from ?";
+		PreparedStatement ps;
+
+		try {
+			ps = connection.prepareStatement(query);
+			ps.setString(1, tableName);
+			ResultSet rs = ps.executeQuery();
+			if(rs.next())
+				result = rs.getInt(1);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
+
+	/**
 	 * 데이터베이스에 카테고리를 추가한다.
 	 * 
 	 * @param categoryName 추가할 카테고리 이름.
@@ -88,8 +134,8 @@ public class DbManager {
 	public void insertCategory(String categoryName) {
 		try {
 			Connection connection = getConnection();
-			String query = "insert into category_list(name) values(?)";
-			PreparedStatement preparedStatement = connection.prepareStatement(query);
+			String sql = "insert into category_list(name) values(?)";
+			PreparedStatement preparedStatement = connection.prepareStatement(sql);
 			preparedStatement.setString(1, categoryName);
 			preparedStatement.execute();
 			preparedStatement.close();
@@ -108,8 +154,8 @@ public class DbManager {
 	public void modifyCategory(int id, String newCategoryName) {
 		try {
 			Connection connection = getConnection();
-			String query = "update category_list set category=? where id=" + id;
-			PreparedStatement preparedStatement = connection.prepareStatement(query);
+			String sql = "update category_list set category=? where id=" + id;
+			PreparedStatement preparedStatement = connection.prepareStatement(sql);
 			preparedStatement.setString(1, newCategoryName);
 			preparedStatement.execute();
 			preparedStatement.close();
@@ -128,8 +174,8 @@ public class DbManager {
 	public void modifyWord(int id, String newCategoryName) {
 		try {
 			Connection connection = getConnection();
-			String query = "update category_list set category=? where id=" + id;
-			PreparedStatement preparedStatement = connection.prepareStatement(query);
+			String sql = "update category_list set category=? where id=" + id;
+			PreparedStatement preparedStatement = connection.prepareStatement(sql);
 			preparedStatement.setString(1, newCategoryName);
 			preparedStatement.execute();
 			preparedStatement.close();
@@ -179,14 +225,14 @@ public class DbManager {
 		int result = -1;
 
 		try {
-			String query = "select id from category_list where category=?";
-			ps = connection.prepareStatement(query);
+			String sql = "select id from category_list where category=?";
+			ps = connection.prepareStatement(sql);
 			ps.setString(1, category);
 			resultSet = ps.executeQuery();
-			
+
 			if(resultSet.next())
 				result = resultSet.getInt(1);
-			
+
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -202,9 +248,9 @@ public class DbManager {
 	public void insertWord(String word, int categoryId) {
 		try {
 			Connection connection = getConnection();
-			String query = "insert into word_list(word, category_id) values(?, ?)";
+			String sql = "insert into word_list(word, category_id) values(?, ?)";
 
-			PreparedStatement ps = connection.prepareStatement(query);
+			PreparedStatement ps = connection.prepareStatement(sql);
 			ps.setString(1, word);
 			ps.setInt(2, categoryId);
 
@@ -225,5 +271,24 @@ public class DbManager {
 	public void insertWord(String word, String category) {
 		int categoryId = queryCategoryId(category);
 		insertWord(word, categoryId);
+	}
+
+	public ArrayList<Word> queryAllWord() {
+		Connection connection = getConnection();
+		ArrayList<Word> wordList = new ArrayList<>();
+		try {
+			String sql = "select * from word_list";
+			PreparedStatement ps;
+			ps = connection.prepareStatement(sql);
+			ResultSet rs = ps.executeQuery();
+
+			while(rs.next())
+				wordList.add(new Word(rs.getString(2), rs.getInt(3)));
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return wordList;
 	}
 }
