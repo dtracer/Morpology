@@ -86,8 +86,8 @@ public class DbManager {
 	 * @param categoryName 추가할 카테고리 이름.
 	 */
 	public void insertCategory(String categoryName) {
-		Connection connection = getConnection();
 		try {
+			Connection connection = getConnection();
 			String query = "insert into category_list(name) values(?)";
 			PreparedStatement preparedStatement = connection.prepareStatement(query);
 			preparedStatement.setString(1, categoryName);
@@ -117,7 +117,26 @@ public class DbManager {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+	}
 
+	/**
+	 * 카테고리를 수정한다.
+	 * 
+	 * @param id 수정할 카테고리의 아이디
+	 * @param categoryName 새로운 이름
+	 */
+	public void modifyWord(int id, String newCategoryName) {
+		try {
+			Connection connection = getConnection();
+			String query = "update category_list set category=? where id=" + id;
+			PreparedStatement preparedStatement = connection.prepareStatement(query);
+			preparedStatement.setString(1, newCategoryName);
+			preparedStatement.execute();
+			preparedStatement.close();
+			connection.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -126,9 +145,9 @@ public class DbManager {
 	 * @return {@code ArrayList<String>} names of all categories
 	 */
 	public ArrayList<String> queryAllCategory() {
-		Connection connection = getConnection();
 		ArrayList<String> resultList = new ArrayList<>();
 		try {
+			Connection connection = getConnection();
 			Statement statement = null;
 			ResultSet resultSet = null;
 
@@ -145,5 +164,66 @@ public class DbManager {
 			e.printStackTrace();
 		}
 		return resultList;
+	}
+
+	/**
+	 * 카테고리 아이디를 받아온다.
+	 * 
+	 * @param category 아이디를 알고싶은 카테고리 이름
+	 * @return integer value of category id
+	 */
+	public int queryCategoryId(String category) {
+		Connection connection = getConnection();
+		PreparedStatement ps = null;
+		ResultSet resultSet = null;
+		int result = -1;
+
+		try {
+			String query = "select id from category_list where category=?";
+			ps = connection.prepareStatement(query);
+			ps.setString(1, category);
+			resultSet = ps.executeQuery();
+			
+			if(resultSet.next())
+				result = resultSet.getInt(1);
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
+
+	/**
+	 * 단어를 추가한다.
+	 * 
+	 * @param word 추가할 단어
+	 * @param categoryId 이 단어가 속해있는 카테고리의 아이디
+	 */
+	public void insertWord(String word, int categoryId) {
+		try {
+			Connection connection = getConnection();
+			String query = "insert into word_list(word, category_id) values(?, ?)";
+
+			PreparedStatement ps = connection.prepareStatement(query);
+			ps.setString(1, word);
+			ps.setInt(2, categoryId);
+
+			ps.execute();
+			ps.close();
+			connection.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * 단어를 추가한다.
+	 * 
+	 * @param word 추가할 단어
+	 * @param categoryId 이 단어가 속해있는 카테고리 이름
+	 */
+	public void insertWord(String word, String category) {
+		int categoryId = queryCategoryId(category);
+		insertWord(word, categoryId);
 	}
 }
