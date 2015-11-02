@@ -106,17 +106,15 @@ public class DbManager {
 	 * {@link #TABLE_TRAINING_DATA}<br>
 	 * 중에 하나가 들어감
 	 * 
-	 * @return integer value of 테이블 tuple의 개수
+	 * @return integer value of 테이블 tuple의 개수, query에 실패하면 -1.
 	 */
 	public int queryCountOfTable(String tableName) {
 		Connection connection = getConnection();
 		int result = -1;
-		String query = "select count(*) from ?";
-		PreparedStatement ps;
+		String sql = "select count(*) from " + tableName;
 
 		try {
-			ps = connection.prepareStatement(query);
-			ps.setString(1, tableName);
+			PreparedStatement ps = connection.prepareStatement(sql);
 			ResultSet rs = ps.executeQuery();
 			if(rs.next())
 				result = rs.getInt(1);
@@ -134,7 +132,7 @@ public class DbManager {
 	public void insertCategory(String categoryName) {
 		try {
 			Connection connection = getConnection();
-			String sql = "insert into category_list(name) values(?)";
+			String sql = "insert into category_list(category) values(?)";
 			PreparedStatement preparedStatement = connection.prepareStatement(sql);
 			preparedStatement.setString(1, categoryName);
 			preparedStatement.execute();
@@ -152,26 +150,6 @@ public class DbManager {
 	 * @param categoryName 새로운 이름
 	 */
 	public void modifyCategory(int id, String newCategoryName) {
-		try {
-			Connection connection = getConnection();
-			String sql = "update category_list set category=? where id=" + id;
-			PreparedStatement preparedStatement = connection.prepareStatement(sql);
-			preparedStatement.setString(1, newCategoryName);
-			preparedStatement.execute();
-			preparedStatement.close();
-			connection.close();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * 카테고리를 수정한다.
-	 * 
-	 * @param id 수정할 카테고리의 아이디
-	 * @param categoryName 새로운 이름
-	 */
-	public void modifyWord(int id, String newCategoryName) {
 		try {
 			Connection connection = getConnection();
 			String sql = "update category_list set category=? where id=" + id;
@@ -216,7 +194,7 @@ public class DbManager {
 	 * 카테고리 아이디를 받아온다.
 	 * 
 	 * @param category 아이디를 알고싶은 카테고리 이름
-	 * @return integer value of category id
+	 * @return integer value of category id if exists, otherwise -1.
 	 */
 	public int queryCategoryId(String category) {
 		Connection connection = getConnection();
