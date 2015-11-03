@@ -106,15 +106,17 @@ public class DbManager {
 	 * {@link #TABLE_TRAINING_DATA}<br>
 	 * 중에 하나가 들어감
 	 * 
-	 * @return integer value of 테이블 tuple의 개수, query에 실패하면 -1.
+	 * @return integer value of 테이블 tuple의 개수
 	 */
 	public int queryCountOfTable(String tableName) {
 		Connection connection = getConnection();
 		int result = -1;
-		String sql = "select count(*) from " + tableName;
+		String query = "select count(*) from ?";
+		PreparedStatement ps;
 
 		try {
-			PreparedStatement ps = connection.prepareStatement(sql);
+			ps = connection.prepareStatement(query);
+			ps.setString(1, tableName);
 			ResultSet rs = ps.executeQuery();
 			if(rs.next())
 				result = rs.getInt(1);
@@ -132,7 +134,7 @@ public class DbManager {
 	public void insertCategory(String categoryName) {
 		try {
 			Connection connection = getConnection();
-			String sql = "insert into category_list(category) values(?)";
+			String sql = "insert into category_list(name) values(?)";
 			PreparedStatement preparedStatement = connection.prepareStatement(sql);
 			preparedStatement.setString(1, categoryName);
 			preparedStatement.execute();
@@ -150,6 +152,26 @@ public class DbManager {
 	 * @param categoryName 새로운 이름
 	 */
 	public void modifyCategory(int id, String newCategoryName) {
+		try {
+			Connection connection = getConnection();
+			String sql = "update category_list set category=? where id=" + id;
+			PreparedStatement preparedStatement = connection.prepareStatement(sql);
+			preparedStatement.setString(1, newCategoryName);
+			preparedStatement.execute();
+			preparedStatement.close();
+			connection.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * 카테고리를 수정한다.
+	 * 
+	 * @param id 수정할 카테고리의 아이디
+	 * @param categoryName 새로운 이름
+	 */
+	public void modifyWord(int id, String newCategoryName) {
 		try {
 			Connection connection = getConnection();
 			String sql = "update category_list set category=? where id=" + id;
@@ -194,7 +216,7 @@ public class DbManager {
 	 * 카테고리 아이디를 받아온다.
 	 * 
 	 * @param category 아이디를 알고싶은 카테고리 이름
-	 * @return integer value of category id if exists, otherwise -1.
+	 * @return integer value of category id
 	 */
 	public int queryCategoryId(String category) {
 		Connection connection = getConnection();
@@ -239,7 +261,7 @@ public class DbManager {
 			e.printStackTrace();
 		}
 	}
-
+	
 	/**
 	 * 단어를 추가한다.
 	 * 
@@ -251,6 +273,11 @@ public class DbManager {
 		insertWord(word, categoryId);
 	}
 
+	/**
+	 * {@link #TABLE_WORD_LIST} 테이블에서 모든 단어들을 리턴한다.
+	 * 
+	 * @return {@code ArrayList<Word>} All of the words in the word list table.
+	 */
 	public ArrayList<Word> queryAllWord() {
 		Connection connection = getConnection();
 		ArrayList<Word> wordList = new ArrayList<>();
@@ -267,6 +294,55 @@ public class DbManager {
 			e.printStackTrace();
 		}
 
+		return wordList;
+	}
+	
+	/**
+	 * 특정 카테고리에 속한 단어들 개수를 리턴
+	 * 
+	 * @param categoryId 단어가 몇개인지 알고싶은 카테고리의 아이디
+	 * @return 단어의 개수
+	 */
+	public int queryCountOfWordList(int categoryId) {
+		Connection connection = getConnection();
+		int result = -1;
+		String query = "select count(*) from word_list where category_id=?";
+		PreparedStatement ps;
+
+		try {
+			ps = connection.prepareStatement(query);
+			ps.setInt(1, categoryId);
+			ResultSet rs = ps.executeQuery();
+			if(rs.next())
+				result = rs.getInt(1);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
+	
+	/**
+	 * 특정 카테고리에 속하는 단어 리스트를 리턴
+	 * 
+	 * @param categoryId 리턴할 단어들의 카테고리 아이디 
+	 * @return {@code ArrayList<Word>} 단어 리스트
+	 */
+	public ArrayList<Word> queryWordList(int categoryId) {
+		Connection connection = getConnection(); 
+		ArrayList<Word> wordList = new ArrayList<>();
+		try {
+			String sql = "select * from word_list where category_id=?";
+			PreparedStatement ps;
+			ps = connection.prepareStatement(sql);
+			ps.setInt(1, categoryId);
+			ResultSet rs = ps.executeQuery();
+
+			while(rs.next())
+				wordList.add(new Word(rs.getString(2), rs.getInt(3)));
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 		return wordList;
 	}
 }
