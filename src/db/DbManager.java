@@ -13,7 +13,7 @@ import java.util.ArrayList;
  * 
  * 로컬에서 테스트할 시 각자에 맞게 입력해야 하는 부분이 있음을 유의.
  * 
- * <p>최종 수정: 2015-11-02</p>
+ * <p>최종 수정: 2015-11-03</p>
  * 
  * @author Moon
  *
@@ -112,14 +112,17 @@ public class DbManager {
 		Connection connection = getConnection();
 		int result = -1;
 		String query = "select count(*) from ?";
-		PreparedStatement ps;
 
 		try {
-			ps = connection.prepareStatement(query);
+			PreparedStatement ps = connection.prepareStatement(query);
 			ps.setString(1, tableName);
 			ResultSet rs = ps.executeQuery();
 			if(rs.next())
 				result = rs.getInt(1);
+			
+			rs.close();
+			ps.close();
+			connection.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -233,6 +236,9 @@ public class DbManager {
 			if(resultSet.next())
 				result = resultSet.getInt(1);
 
+			resultSet.close();
+			ps.close();
+			connection.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -290,6 +296,9 @@ public class DbManager {
 			while(rs.next())
 				wordList.add(new Word(rs.getString(2), rs.getInt(3)));
 
+			rs.close();
+			ps.close();
+			connection.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -307,14 +316,17 @@ public class DbManager {
 		Connection connection = getConnection();
 		int result = -1;
 		String query = "select count(*) from word_list where category_id=?";
-		PreparedStatement ps;
-
+		
 		try {
-			ps = connection.prepareStatement(query);
+			PreparedStatement ps = connection.prepareStatement(query);
 			ps.setInt(1, categoryId);
 			ResultSet rs = ps.executeQuery();
 			if(rs.next())
 				result = rs.getInt(1);
+			
+			rs.close();
+			ps.close();
+			connection.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -339,7 +351,10 @@ public class DbManager {
 
 			while(rs.next())
 				wordList.add(new Word(rs.getString(2), rs.getInt(3)));
-
+			
+			rs.close();
+			ps.close();
+			connection.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
