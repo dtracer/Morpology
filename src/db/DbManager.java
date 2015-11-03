@@ -41,16 +41,16 @@ public class DbManager {
 
 	@SuppressWarnings("unused")
 	private static final String TABLE_CATEGORY_LIST = "category_list";
-	
+
 	@SuppressWarnings("unused")
 	private static final String TABLE_WORD_LIST = "word_list";
-	
+
 	@SuppressWarnings("unused")
 	private static final String TABLE_EXCEPTIONAL_WORD_LIST = "exceptional_word_list";
-	
+
 	@SuppressWarnings("unused")
 	private static final String TABLE_REPORTED_LIST = "reported_list";
-	
+
 	@SuppressWarnings("unused")
 	private static final String TABLE_TRAINING_DATA = "training_data";
 
@@ -119,7 +119,7 @@ public class DbManager {
 			ResultSet rs = ps.executeQuery();
 			if(rs.next())
 				result = rs.getInt(1);
-			
+
 			rs.close();
 			ps.close();
 			connection.close();
@@ -155,26 +155,6 @@ public class DbManager {
 	 * @param categoryName 새로운 이름
 	 */
 	public void modifyCategory(int id, String newCategoryName) {
-		try {
-			Connection connection = getConnection();
-			String sql = "update category_list set category=? where id=" + id;
-			PreparedStatement preparedStatement = connection.prepareStatement(sql);
-			preparedStatement.setString(1, newCategoryName);
-			preparedStatement.execute();
-			preparedStatement.close();
-			connection.close();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * 카테고리를 수정한다.
-	 * 
-	 * @param id 수정할 카테고리의 아이디
-	 * @param categoryName 새로운 이름
-	 */
-	public void modifyWord(int id, String newCategoryName) {
 		try {
 			Connection connection = getConnection();
 			String sql = "update category_list set category=? where id=" + id;
@@ -246,6 +226,26 @@ public class DbManager {
 	}
 
 	/**
+	 * 카테고리 삭제
+	 * 
+	 * @param categoryId 삭제할 카테고리의 아이디
+	 */
+	public void deleteCategory(int categoryId) {
+		Connection connection = getConnection();
+		String sql = "delete from category_list where id=?";
+		try {
+			PreparedStatement ps = connection.prepareStatement(sql);
+			ps.setInt(1, categoryId);
+			ps.execute();
+
+			ps.close();
+			connection.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
 	 * 단어를 추가한다.
 	 * 
 	 * @param word 추가할 단어
@@ -267,7 +267,7 @@ public class DbManager {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * 단어를 추가한다.
 	 * 
@@ -305,7 +305,7 @@ public class DbManager {
 
 		return wordList;
 	}
-	
+
 	/**
 	 * 특정 카테고리에 속한 단어들 개수를 리턴
 	 * 
@@ -316,14 +316,14 @@ public class DbManager {
 		Connection connection = getConnection();
 		int result = -1;
 		String query = "select count(*) from word_list where category_id=?";
-		
+
 		try {
 			PreparedStatement ps = connection.prepareStatement(query);
 			ps.setInt(1, categoryId);
 			ResultSet rs = ps.executeQuery();
 			if(rs.next())
 				result = rs.getInt(1);
-			
+
 			rs.close();
 			ps.close();
 			connection.close();
@@ -332,7 +332,7 @@ public class DbManager {
 		}
 		return result;
 	}
-	
+
 	/**
 	 * 특정 카테고리에 속하는 단어 리스트를 리턴
 	 * 
@@ -351,7 +351,7 @@ public class DbManager {
 
 			while(rs.next())
 				wordList.add(new Word(rs.getString(2), rs.getInt(3)));
-			
+
 			rs.close();
 			ps.close();
 			connection.close();
@@ -359,5 +359,79 @@ public class DbManager {
 			e.printStackTrace();
 		}
 		return wordList;
+	}
+
+	/**
+	 * {@link #TABLE_WORD_LIST}의 단어를 수정한다.
+	 * 
+	 * @param wordId 수정할 단어의 아이디
+	 * @param newWord 새로운 단어
+	 * @param newCategoryId 새로운 카테고리 아이디
+	 */
+	public void modifyWord(int wordId, String newWord, int newCategoryId) {
+		Connection connection = getConnection();
+		String sql = "update word_list set word=?, category_id=? where id=?";
+		try {
+			PreparedStatement ps = connection.prepareStatement(sql);
+			ps.setString(1, newWord);
+			ps.setInt(2, newCategoryId);
+			ps.setInt(3, wordId);
+			ps.execute();
+
+			ps.close();
+			connection.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * {@link #TABLE_WORD_LIST}에서 단어를 삭제한다.
+	 * 
+	 * @param wordId 삭제할 단어의 아이디
+	 */
+	public void deleteWord(int wordId) {
+		Connection connection = getConnection();
+		String sql = "delete from word_list where id=?";
+
+		try {
+			PreparedStatement ps = connection.prepareStatement(sql);
+			ps.setInt(1, wordId);
+			ps.execute();
+
+			ps.close();
+			connection.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**JUNE*******
+	 * Report table을 받아온다.
+	 * 
+	 * @param id = {@code integer} report id
+	 * @param contents = {@code String} 제목
+	 * @param opinion = {@code String} 내용
+	 */
+	public ArrayList<Report> queryAllReport() {
+		ArrayList<Report> resultList = new ArrayList<>();
+		try {
+			Connection connection = getConnection();
+			Statement statement = null;
+			ResultSet resultSet = null;
+
+			statement = connection.createStatement();
+			resultSet = statement.executeQuery("select * from reported_list");
+
+			while(resultSet.next()) {
+				resultList.add(new Report(resultSet.getInt("id"), resultSet.getString("Contents"), resultSet.getString("Opinion")));
+			}
+			statement.close();
+			resultSet.close();
+			connection.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return resultList;
 	}
 }
