@@ -405,6 +405,167 @@ public class DbManager {
 			e.printStackTrace();
 		}
 	}
+	
+	/**
+	 * 예외 단어를 추가한다.
+	 * 
+	 * @param word 추가할 예외 단어
+	 * @param categoryId 이 예외 단어가 속해있는 카테고리의 아이디
+	 */
+	public void insertExceptionalWord(String word, int categoryId) {
+		try {
+			Connection connection = getConnection();
+			String sql = "insert into exceptional_word_list(word, category_id) values(?, ?)";
+
+			PreparedStatement ps = connection.prepareStatement(sql);
+			ps.setString(1, word);
+			ps.setInt(2, categoryId);
+
+			ps.execute();
+			ps.close();
+			connection.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * 예외 단어를 추가한다.
+	 * 
+	 * @param word 추가할 예외 단어
+	 * @param categoryId 이 예외 단어가 속해있는 카테고리 이름
+	 */
+	public void insertExceptionalWord(String word, String category) {
+		int categoryId = queryCategoryId(category);
+		insertExceptionalWord(word, categoryId);
+	}
+
+	/**
+	 * {@link TABLE_EXCEPTIONAL_WORD_LIST} 테이블에서 모든 예외 단어들을 리턴한다.
+	 * 
+	 * @return {@code ArrayList<Word>} All of the exceptional words in the exceptional word list table.
+	 */
+	public ArrayList<Word> queryAllExceptionalWord() {
+		Connection connection = getConnection();
+		ArrayList<Word> wordList = new ArrayList<>();
+		try {
+			String sql = "select * from exceptional_word_list";
+			PreparedStatement ps;
+			ps = connection.prepareStatement(sql);
+			ResultSet rs = ps.executeQuery();
+
+			while(rs.next())
+				wordList.add(new Word(rs.getString(2), rs.getInt(3)));
+
+			rs.close();
+			ps.close();
+			connection.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return wordList;
+	}
+
+	/**
+	 * 특정 카테고리에 속한 예외 단어들 개수를 리턴
+	 * 
+	 * @param categoryId 예외 단어가 몇개인지 알고싶은 카테고리의 아이디
+	 * @return 예외 단어의 개수
+	 */
+	public int queryCountOfExcepWordList(int categoryId) {
+		Connection connection = getConnection();
+		int result = -1;
+		String query = "select count(*) from exceptional_word_list where category_id=?";
+
+		try {
+			PreparedStatement ps = connection.prepareStatement(query);
+			ps.setInt(1, categoryId);
+			ResultSet rs = ps.executeQuery();
+			if(rs.next())
+				result = rs.getInt(1);
+
+			rs.close();
+			ps.close();
+			connection.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
+
+	/**
+	 * 특정 카테고리에 속하는 예외 단어 리스트를 리턴
+	 * 
+	 * @param categoryId 리턴할 예외 단어들의 카테고리 아이디 
+	 * @return {@code ArrayList<Word>} 예외 단어 리스트
+	 */
+	public ArrayList<Word> queryExceptionalWordList(int categoryId) {
+		Connection connection = getConnection(); 
+		ArrayList<Word> wordList = new ArrayList<>();
+		try {
+			String sql = "select * from exceptional_word_list where category_id=?";
+			PreparedStatement ps;
+			ps = connection.prepareStatement(sql);
+			ps.setInt(1, categoryId);
+			ResultSet rs = ps.executeQuery();
+
+			while(rs.next())
+				wordList.add(new Word(rs.getString(2), rs.getInt(3)));
+
+			rs.close();
+			ps.close();
+			connection.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return wordList;
+	}
+
+	/**
+	 * {@link #TABLE_EXCEPTIONAL_WORD_LIST}의 예외 단어를 수정한다.
+	 * 
+	 * @param wordId 수정할 예외 단어의 아이디
+	 * @param newWord 새로운 예외 단어
+	 * @param newCategoryId 새로운 카테고리 아이디
+	 */
+	public void modifyExceptionalWord(int wordId, String newWord, int newCategoryId) {
+		Connection connection = getConnection();
+		String sql = "update exceptional_word_list set word=?, category_id=? where id=?";
+		try {
+			PreparedStatement ps = connection.prepareStatement(sql);
+			ps.setString(1, newWord);
+			ps.setInt(2, newCategoryId);
+			ps.setInt(3, wordId);
+			ps.execute();
+
+			ps.close();
+			connection.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * {@link #TABLE_EXCEPTIONAL_WORD_LIST}에서 예외 단어를 삭제한다.
+	 * 
+	 * @param wordId 삭제할 예외 단어의 아이디
+	 */
+	public void deleteExceptionalWord(int wordId) {
+		Connection connection = getConnection();
+		String sql = "delete from exceptional_word_list where id=?";
+
+		try {
+			PreparedStatement ps = connection.prepareStatement(sql);
+			ps.setInt(1, wordId);
+			ps.execute();
+
+			ps.close();
+			connection.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
 
 	/**JUNE*******
 	 * Report table을 받아온다.
