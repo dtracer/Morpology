@@ -35,7 +35,7 @@ public class DbManager {
 	/**
 	 * mysql 로컬호스트 password 입력해야함.
 	 */
-	private static final String password = "moon";
+	private static final String password = "root";
 	////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////
 
@@ -595,4 +595,5 @@ public class DbManager {
 		}
 		return resultList;
 	}
+
 }
