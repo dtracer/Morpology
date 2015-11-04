@@ -22,21 +22,12 @@ public class CategoryAnalyzer {
 	 * db에서 요소를 불러와 KomoranHelper 가 형태소로 나눈 문장을 요소별 카운트를 한다
 	 * 
 	 */
-	private List factorDic = new ArrayList<Factor>(); // 자살준비 factor에 어휘 들어갈 목록
-
-	private List<Factor> ambiguityDic = new ArrayList<>();
-	private static int dicSize; // 어휘 수량
-
 	private ArrayList<TextMsg> testMsg = new ArrayList<>();
 
 	private db.DbManager dbmanager = db.DbManager.getInstance();
 
-	private static String dbLoc = "D://IDE workspace//workspace//morphology//lib//models-light"; // 형태소
-																									// 분석
-																									// 파일
-																									// 경로
-
-	private static String dicFileLoc = ".//lib/dic.txt";
+	private static String dbLoc = ".//lib//models-light"; // 형태소
+	
 	/**
 	 * factor 파일 상대 경로 // 저장된
 	 */
@@ -515,12 +506,32 @@ public class CategoryAnalyzer {
 	public void initTestMsg(){
 		this.testMsg=new ArrayList<>();
 	}
+	public ArrayList<Integer> categoryAnalyzer(String tmp){
+		
+		this.getDBFactor();
+		List<TextMsg> tm = this.morpology(tmp);
+		this.analyzingList(tm);
+
+		this.check(this.testMsg);
+		ArrayList<Integer> result=new ArrayList<>();
+
+		for(int i=0;i<this.totlaFactors;i++){
+			result.add(this.factors[i].factorCnt);
+		
+				if(this.factors[i].factorCnt>0){
+					System.out.println(this.factors[i].factorName+" 이(가) "+this.factors[i].factorCnt+"개 "+"포함되어 있음");
+					
+				}
+		}
+		
+		return result;
+	}
 	public static void main(String[] args) {
 
 		CategoryAnalyzer m = new CategoryAnalyzer();
 
 		// m.addWordWithMP("미워요");
-		m.getDBFactor();// factor들을 txt에서 다 읽어옴
+		
 
 		/*
 		for(int i=0;i<m.totlaFactors;i++){
@@ -531,18 +542,18 @@ public class CategoryAnalyzer {
 		}
 		*/
 		
-		/* 
-		 * 내가 세상에 없을것 같아 
-		 * 죽고싶어
-		 * 사랑해
-		 * 
-		 * 
-		 */
+		ArrayList<Integer> result=	m.categoryAnalyzer("사랑해 내가 세상에 없을것 같아 죽고싶어");
 		
+		for(int i=0;i<m.totlaFactors;i++)
+			System.out.println(result.get(i));
+		/* 메인 시퀀스
+		 m.getDBFactor();// factor들을 txt에서 다 읽어옴
 		List<TextMsg> tm = m.morpology(m.readData("내가 세상에 없을것 같아 사랑해 죽고싶어"));
 		m.analyzingList(tm);
 
 		m.check(m.testMsg);
+		
+		*/
 /*		
 		m.initTestMsg();
 		m.analyzingList(m.morpology(m.readData("죽고싶어")));
@@ -555,12 +566,6 @@ public class CategoryAnalyzer {
 		m.check(m.testMsg);
 		
 		*/
-		
-		for(int i=0;i<m.totlaFactors;i++){
-				if(m.factors[i].factorCnt>0)
-					System.out.println(m.factors[i].factorName+" 이(가) "+m.factors[i].factorCnt+"개 "+"포함되어 있음");
-			
-		}
 		
 		/*
 		 * for (int i = 0; i < m.totlaFactors; i++) if (m.factors[i].factorCnt >
