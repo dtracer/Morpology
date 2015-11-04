@@ -470,7 +470,7 @@ public class CategoryAnalyzer {
 	 */
 
 
-	public void addWordWithMP(String tmp) {
+	public void addWordWithMP(String tmp,int index) {
 
 		List tmp_list = khelper.getter().analyze(tmp);
 		String returnStr = "";
@@ -495,7 +495,7 @@ public class CategoryAnalyzer {
 		} // for
 		System.out.println("word list에 넣을 것:" + returnStr);
 		// 1 대신에 category ID 넿으세요
-		dbmanager.insertWord(returnStr, 1);
+		dbmanager.insertWord(returnStr, index);
 	}
 	public void check(List<TextMsg> tm ){
 		
