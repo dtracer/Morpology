@@ -20,4 +20,4 @@ public class KomoranHelper {
 		komoran = new Komoran(db_loc); // 형태소 분석 위한 경로 지정
 	}
 	
-}
+} 
