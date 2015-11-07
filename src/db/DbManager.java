@@ -406,7 +406,7 @@ public class DbManager {
 		}
 	}
 	
-	/**
+	/** 
 	 * 예외 단어를 추가한다.
 	 * 
 	 * @param word 추가할 예외 단어
